@@ -13,12 +13,34 @@ from feature_selection import get_features
 
 def get_gbr():
     return {
-            'extra trees' : { 
+            'gbr' : { 
                 'est' :ensemble.GradientBoostingRegressor(),
                 'grid' : {
                 'loss' :['ls', 'huber','lad','quantile'],
                 'n_estimators' : [50,200,500,1000],
                 'learning_rate': [.1,.03, .01],
+                'max_features': [1.0, .3, .1],
+                }
+            },
+            'Bagging' : { 
+                'est' :ensemble.BaggingRegressor(),
+                'grid' : {
+                'n_estimators' : [50,200,500,1000],
+                'max_features': [1.0, .3, .1],
+                'max_samples': [1.0, .3, .1],
+                }
+            },
+            'extra trees' : { 
+                'est' :ensemble.ExtraTreesRegressor(),
+                'grid' : {
+                'n_estimators' : [50,200,500,1000],
+                'max_features': [1.0, .3, .1],
+                }
+            },
+            'random forest' : { 
+                'est' :ensemble.RandomForestRegressor(),
+                'grid' : {
+                'n_estimators' : [50,200,500,1000],
                 'max_features': [1.0, .3, .1],
                 }
             },
@@ -63,3 +85,7 @@ def main():
     
 if __name__ == '__main__':
     main()
+
+
+
+

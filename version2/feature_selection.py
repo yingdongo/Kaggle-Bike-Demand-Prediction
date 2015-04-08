@@ -11,7 +11,8 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from explore_data import load_data
 from feature_engineering import add_feature
-
+from sklearn.feature_selection import RFECV
+from sklearn.svm import SVR
 def split_data(data,cols):
     X=data[cols]
     y1=data['casual']
@@ -37,17 +38,12 @@ def cv_score(rg,X_train,y_train):
                                            pre_dispatch='2*n_jobs')
     return score.mean()
 
-def select_feature(X_train,y_train,feature_cols,importances):
-    indices = np.argsort(importances)[::-1]    
-    f_count=len(importances)
-    f_start=np.int(np.sqrt(f_count))
-    f_range=range(f_start,f_count)
-    score=np.array(np.zeros(f_count-f_start))
-    for i in f_range:
-        cols=feature_cols[indices]
-        cols=cols[:i]
-        score[i-f_start]=cv_score(create_rf(),X_train[cols],y_train)
-    return pd.DataFrame(score,index=f_range)
+def select_feature(X,y):
+    estimator = SVR(kernel='linear')
+    selector = RFECV(estimator, step=1, cv=5)
+    selector = selector.fit(X, y)
+    return selector
+
 
 
 
@@ -74,35 +70,16 @@ def get_features(X_train,y_train,n):
 def main():
     train=load_data('train.csv')
     add_feature(train)
+    print train.describe()
     feature_cols= [col for col in train.columns if col  not in ['datetime','count','casual','registered']]
 
     X_train,y=split_data1(train,feature_cols)
-    importances=feature_importances(create_rf(),X_train,y)
-
-    score=select_feature(X_train,y,X_train.columns,importances)
-    print score
-#==============================================================================
-#     X_train,y_train1,y_train2=split_data(train,feature_cols)
-#     importances1=feature_importances(create_rf(),X_train,y_train1)
-#     plot_importances(importances1,X_train.columns)
-#     score1=select_feature(X_train,y_train1,X_train.columns,importances1)
-#     print score1
-#     plt.figure(figsize=(20,8))
-#     plt.plot(score1)
-#     plt.title('features for casual')
-#     plt.xticks(range(len(score1)),score1.index)
-#     plt.show()
-# 
-#     importances2=feature_importances(create_rf(),X_train,y_train2)
-#     plot_importances(importances1,X_train.columns)
-#     score2=select_feature(X_train,y_train2,X_train.columns,importances2)
-#     print score2
-#     plt.figure(figsize=(20,8))
-#     plt.plot(score2)
-#     plt.title('features for registered')
-#     plt.xticks(range(len(score2)),score2.index)
-#==============================================================================
-    plt.show()
+    selector=select_feature(X_train,y)
+    print selector.support_ 
+    print selector.ranking_
+    print selector.grid_scores_
+    print feature_cols
+   #['season', 'workingday', 'weather', 'temp', 'atemp', 'humidity','weekday', 'month', 'hour']
 
 if __name__ == '__main__':
     main()
