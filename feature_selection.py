@@ -10,8 +10,8 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from explore_data import load_data
-from feature_engineering import add_feature
-
+from feature_engineering import feature_engineering
+from data_preprocess import data_preprocess 
 def split_data(data,cols):
     X=data[cols]
     y1=data['casual']
@@ -24,8 +24,8 @@ def split_data1(data,cols):
     return X,y
 
 def create_rf():
-    forest=ensemble.GradientBoostingRegressor()
-    return forest
+    rf=ensemble.RandomForestRegressor(n_estimators=1000, min_samples_split=6, oob_score=True)
+    return rf
 
 def feature_importances(rg,X_train,y_train):
     rg.fit(X_train,y_train)
@@ -50,7 +50,6 @@ def select_feature(X_train,y_train,feature_cols,importances):
     return pd.DataFrame(score,index=f_range)
 
 
-
 def plot_importances(importances, col_array):
 # Calculate the feature ranking
     indices = np.argsort(importances)[::-1]    
@@ -73,12 +72,12 @@ def get_features(X_train,y_train,n):
 
 def main():
     train=load_data('train.csv')
-    add_feature(train)
+    train=data_preprocess(train)
+    train=feature_engineering(train)
     feature_cols= [col for col in train.columns if col  not in ['datetime','count','casual','registered']]
 
     X_train,y=split_data1(train,feature_cols)
     importances=feature_importances(create_rf(),X_train,y)
-
     score=select_feature(X_train,y,X_train.columns,importances)
     print score
 #==============================================================================

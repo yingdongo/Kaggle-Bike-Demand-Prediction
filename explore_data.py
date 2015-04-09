@@ -5,12 +5,9 @@ Created on Sun Mar 15 20:55:00 2015
 @author: Ying
 """
 
-import pandas as pd
 from matplotlib import pyplot as plt
 import numpy as np
-def load_data(url):
-    data = pd.read_csv(url)
-    return data
+from tools import load_data
 
 def show_data(data):
     print data.head(10)

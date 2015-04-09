@@ -17,6 +17,8 @@ def create_gbr_r():
     return ensemble.GradientBoostingRegressor(n_estimators=1000,learning_rate=0.01,loss='huber',max_features=1.0)
 def create_gbr():
     return ensemble.GradientBoostingRegressor(n_estimators=200,learning_rate=0.1,loss='huber',max_features=0.3)
+def create_rf():
+    return ensemble.RandomForestRegressor(n_estimators=1000, min_samples_split=6, oob_score=True)
 
 train=load_data('train.csv')
 test=load_data('test.csv')
