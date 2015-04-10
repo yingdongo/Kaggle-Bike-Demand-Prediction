@@ -5,16 +5,29 @@ Created on Tue Mar 17 22:57:02 2015
 @author: Ying
 """
 from sklearn import ensemble
-from explore_data import load_data
-from feature_engineering import add_feature
+from tools import load_data
+from feature_engineering import feature_engineering
+from data_preprocess import data_preprocess 
 from feature_selection import cv_score
 from feature_selection import split_data1
-import pandas as pd
-from matplotlib import pyplot as plt
 from feature_selection import get_features
+import pandas as pd
+from sklearn.linear_model import ElasticNet
+from sklearn.linear_model import Lasso
+from sklearn.svm import SVR
+from sklearn.linear_model import LinearRegression
+
+
 
 def create_rg():
     models=[]
+    models.append
+    models.append(('linearRg',LinearRegression()))
+    models.append(('ElasticNet',ElasticNet(),))
+    models.append(('Lasso',Lasso()))
+    models.append(('linearSVR',SVR(kernel='linear')))
+    models.append(('rbfSVR',SVR(kernel='rbf')))
+    models.append(('AdaBooost',ensemble.AdaBoostRegressor()))
     models.append(('AdaBooost',ensemble.AdaBoostRegressor()))
     models.append(('Bagging',ensemble.BaggingRegressor()))
     models.append(('ExtraTrees',ensemble.ExtraTreesRegressor()))
@@ -32,10 +45,11 @@ def clf_score(models,X_train,y_train):
 
 def main():
     train=load_data('train.csv')
-    add_feature(train)
+    train=data_preprocess(train)
+    train=feature_engineering(train)
     feature_cols= [col for col in train.columns if col  not in ['datetime','count','casual','registered']]
     X_train,y=split_data1(train,feature_cols)
-    cols=get_features(X_train,y,8)
+    cols=get_features(X_train,y,10)
     rg_scores=clf_score(create_rg(),X_train[cols],y)
     print rg_scores
 #==============================================================================

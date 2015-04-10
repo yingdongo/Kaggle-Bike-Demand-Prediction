@@ -80,8 +80,8 @@ def cross_val(reg, tr):
     scores = []
     # kf = KFold(X.shape[0], 10)
     # for train, test in kf:
-    # 选择连续日期作为测试集合比如日期为(10,11), (11,12), ... (18, 19)
-    # 这样应该更加接近真实情况
+    # chose the continuous date as test set as (10,11), (11,12), ... (18, 19)
+    # close to the real station
     for d in range(10, 19):
         test = np.logical_or(X[:,-1] == d, X[:,-1] == (d+1))
         train = np.logical_not(test)
@@ -108,7 +108,7 @@ class Reg:
         ys[ys < 0] = 0
         return ys
 
-# 不同的融合方式
+# different combination ways
 class Combiner:
     def __init__(self, regs):
         self.regs = regs
@@ -140,7 +140,7 @@ def select_rf(tr):
     n = 1000
     print '----- RF -----'
     # if we tune parameters.
-    tuning = 0
+    tuning = 1
 
     if not tuning:
         reg0 = RandomForestRegressor(n_estimators = n, random_state = 0, min_samples_split = 11, oob_score = False, n_jobs = -1)
@@ -148,7 +148,7 @@ def select_rf(tr):
         reg = Reg(reg0, reg1)
         return reg
 
-    min_samples_split = [10,11,12]
+    min_samples_split = [9,10,11,12]
     info = {}
     for mss in min_samples_split:
         print 'min_samples_split = ', mss
@@ -192,15 +192,15 @@ def select():
     tr = read_train()
     print('training ...')
     reg_rf = select_rf(tr)
-    # reg = reg_rf
-    reg_gbdt = select_gbdt(tr)
-    reg = reg_gbdt
-    reg = Combiner([reg_rf, reg_gbdt])
-    cv = 1
-    if cv:
-        scores = cross_val(reg, tr)
-        print scores
-        print scores.mean(), scores.std()
+    reg = reg_rf
+    #reg_gbdt = select_gbdt(tr)
+    #reg = reg_gbdt
+    #reg = Combiner([reg_rf, reg_gbdt])
+    #cv = 1
+    #if cv:
+     #   scores = cross_val(reg, tr)
+     #   print scores
+      #  print scores.mean(), scores.std()
     return (reg, tr)
 
 def run(reg, tr):
@@ -212,7 +212,7 @@ def run(reg, tr):
     (xs, dts) = read_test()
     print('testing ...')
     ys = reg.predict(xs)
-    f = open('submission.csv','w')
+    f = open('submission0.csv','w')
     f.write('datetime,count\n')
     n = len(dts)
     for i in xrange(0, n):

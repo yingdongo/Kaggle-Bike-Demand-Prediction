@@ -5,8 +5,9 @@ Created on Tue Mar 17 23:52:29 2015
 @author: Ying
 """
 from sklearn import ensemble
-from explore_data import load_data
-from feature_engineering import add_feature
+from tools import load_data
+from feature_engineering import feature_engineering
+from data_preprocess import data_preprocess 
 from feature_selection import split_data1
 from feature_selection import split_data
 from feature_selection import get_features
@@ -16,21 +17,23 @@ def create_gbr_c():
 def create_gbr_r():
     return ensemble.GradientBoostingRegressor(n_estimators=1000,learning_rate=0.01,loss='huber',max_features=1.0)
 def create_gbr():
-    return ensemble.GradientBoostingRegressor(n_estimators=200,learning_rate=0.1,loss='huber',max_features=0.3)
+    return ensemble.GradientBoostingRegressor(n_estimators=1000,learning_rate=0.1,loss='ls',max_features=0.3)
 def create_rf():
     return ensemble.RandomForestRegressor(n_estimators=1000, min_samples_split=6, oob_score=True)
 
 train=load_data('train.csv')
 test=load_data('test.csv')
-add_feature(train)
-add_feature(test)
+train=data_preprocess(train)
+train=feature_engineering(train)
+test=data_preprocess(test)
+test=feature_engineering(test)
 feature_cols= [col for col in train.columns if col  not in ['datetime','count','casual','registered']]
 
 X_train,y=split_data1(train,feature_cols)
 X_test=test[feature_cols]
 test_ids=test['datetime']
-cols=get_features(X_train,y,12)
-gbr=create_gbr()
+cols=get_features(X_train,y,10)
+gbr=create_rf()
 gbr.fit(X_train[cols],y)
 y_count=list(gbr.predict(X_test[cols]))
 
@@ -47,7 +50,7 @@ y_count=list(gbr.predict(X_test[cols]))
 #gbr2.fit(X_train[cols2],y2)
 #y_r=list(gbr2.predict(X_test[cols2]))
 
-with open('submit1.csv', "wb") as outfile:
+with open('submit2.csv', "wb") as outfile:
      outfile.write("datetime,count\n")
      for e, val in enumerate(y_count):
          outfile.write("%s,%s\n"%(test_ids[e],abs(val)))

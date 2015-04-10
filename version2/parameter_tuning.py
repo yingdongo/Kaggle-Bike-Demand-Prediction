@@ -18,7 +18,7 @@ def get_gbr():
                 'grid' : {
                 'loss' :['ls', 'huber','lad','quantile'],
                 'n_estimators' : [50,200,500,1000],
-                'learning_rate': [.1,.03, .01],
+                'learning_rate': [.1,.03,.01],
                 'max_features': [1.0, .3, .1],
                 }
             },
@@ -28,6 +28,7 @@ def get_gbr():
                 'n_estimators' : [50,200,500,1000],
                 'max_features': [1.0, .3, .1],
                 'max_samples': [1.0, .3, .1],
+                'oob_score':[True,False]
                 }
             },
             'extra trees' : { 
@@ -35,6 +36,8 @@ def get_gbr():
                 'grid' : {
                 'n_estimators' : [50,200,500,1000],
                 'max_features': [1.0, .3, .1],
+                'min_samples_split':[2,4,6],
+                'oob_score':[True,False]
                 }
             },
             'random forest' : { 
@@ -42,6 +45,8 @@ def get_gbr():
                 'grid' : {
                 'n_estimators' : [50,200,500,1000],
                 'max_features': [1.0, .3, .1],
+                'min_samples_split':[2,4,6],
+                'oob_score':[True,False]
                 }
             },
         }

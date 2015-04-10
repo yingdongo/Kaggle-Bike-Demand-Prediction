@@ -18,7 +18,7 @@ from sklearn.linear_model import LinearRegression
 
 def get_features():
     return ['season', 'holiday', 'workingday', 'weather', 'temp', 'atemp', 'humidity', 'temp_diff', 'month', 'hour']
-
+    
 def create_rg():
     models=[]
     models.append
@@ -45,7 +45,8 @@ def clf_score(models,X_train,y_train):
 
 def main():
     train=load_data('train.csv')
-    add_feature(train)
+    
+    feature_engineering(train)
     feature_cols= [col for col in train.columns if col  not in ['datetime','count','casual','registered']]
     X_train,y=split_data1(train,feature_cols)
     cols=feature_cols
