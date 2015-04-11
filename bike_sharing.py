@@ -15,8 +15,7 @@ def read_in(s, test = False):
     (dt, tm) = ss[0].split(' ')
     (year, month, day) = map(lambda x:int(x), dt.split('-'))
     dt2 = datetime.datetime(year, month, day)
-    # http://shubhamtomar.me/2015/02/25/Bike-Sharing-Demand/
-    # 把weekday考虑进去
+  
     weekday = dt2.weekday()
     hour = int(tm.split(':')[0]) # 0-23
     season = int(ss[1]) # 1-4
@@ -28,18 +27,17 @@ def read_in(s, test = False):
     humidity = float(ss[7])
     windspd = float(ss[8])
     #    0         1       2          3        4        5    6         7     8       9       10
-    # 'day'字段用来做选择validation集合
+    # use 'day' to choose validation set
     p = [weekday, hour, year - 2011, season, holiday, wkday, weather, temp, atemp, humidity, windspd, day]
     if not test: return (p, int(ss[9]), int(ss[10]))
     else: return (p, ss[0])
 
-# 做直方图统计
-# 使用binning
+
 def hist1(ts, mn, mx, step):
     ss = np.arange(mn, mx, step)
     ss2 = zip(ss[:-1], ss[1:])
     return (ss[1:], np.array([ts[np.logical_and(ts >= l, ts < h)].shape[0] for (l,h) in ss2]))
-# 不使用binning
+
 def hist2(ts):
     d = {}
     for t in ts: d[t] = (ts == t).sum()
@@ -140,7 +138,7 @@ def select_rf(tr):
     n = 1000
     print '----- RF -----'
     # if we tune parameters.
-    tuning = 1
+    tuning = 0
 
     if not tuning:
         reg0 = RandomForestRegressor(n_estimators = n, random_state = 0, min_samples_split = 11, oob_score = False, n_jobs = -1)
@@ -193,14 +191,14 @@ def select():
     print('training ...')
     reg_rf = select_rf(tr)
     reg = reg_rf
-    #reg_gbdt = select_gbdt(tr)
-    #reg = reg_gbdt
+    reg_gbdt = select_gbdt(tr)
+    reg = reg_gbdt
     #reg = Combiner([reg_rf, reg_gbdt])
-    #cv = 1
-    #if cv:
-     #   scores = cross_val(reg, tr)
-     #   print scores
-      #  print scores.mean(), scores.std()
+    cv = 1
+    if cv:
+        scores = cross_val(reg, tr)
+        print scores
+        print scores.mean(), scores.std()
     return (reg, tr)
 
 def run(reg, tr):
