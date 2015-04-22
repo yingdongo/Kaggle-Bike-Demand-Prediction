@@ -10,7 +10,6 @@ from feature_engineering import feature_engineering
 from data_preprocess import data_preprocess 
 from feature_selection import get_features
 from tools import cross_val
-from tools import cross_val1
 from tools import Reg
 import numpy as np
 

@@ -31,21 +31,9 @@ feature_cols=['hour','year','temp','workingday','month','weekday','humidity','at
 #feature_cols= [col for col in train.columns if col  not in ['datetime','count','casual','registered']]
 X_train,y=split_data(train,feature_cols)
 gbr=create_xrf()
-gbr.fit(X_train[feature_cols],y)
-y_count=list(gbr.predict(test[feature_cols]))
+gbr.fit(X_train[feature_cols],np.log(y+1))
+y_count=list(np.exp(gbr.predict(test[feature_cols]))-1)
 
-#X_train,y1,y2=split_data(train,feature_cols)
-#X_test=test[feature_cols]
-#test_ids=test['datetime']
-#cols1=get_features(X_train,y1,9)
-#cols2=get_features(X_train,y2,11)
-# 
-#gbr1=create_gbr_c()
-#gbr1.fit(X_train[cols1],y1)
-#y_c=list(gbr1.predict(X_test[cols1]))
-#gbr2=create_gbr_r()
-#gbr2.fit(X_train[cols2],y2)
-#y_r=list(gbr2.predict(X_test[cols2]))
 
 with open('submit_extratrees_rf.csv', "wb") as outfile:
      outfile.write("datetime,count\n")

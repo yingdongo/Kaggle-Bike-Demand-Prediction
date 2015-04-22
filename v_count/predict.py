@@ -10,14 +10,15 @@ from tools import load_data
 from feature_engineering import feature_engineering
 from data_preprocess import data_preprocess
 import numpy as np
-def create_gbr_c():
-    return ensemble.GradientBoostingRegressor(n_estimators=200,learning_rate=0.1,loss='huber',max_features=0.1)
+
 def create_xrf():
     return ensemble.ExtraTreesRegressor(n_estimators=500,min_samples_split=4,max_features=1.0)
 def create_gbr():
-    return ensemble.GradientBoostingRegressor(n_estimators=200,learning_rate=0.1,loss='huber',max_features=0.3)
+    return ensemble.GradientBoostingRegressor(n_estimators=500,learning_rate=0.1,loss='huber',max_features=0.3)
 def create_bagging():
     return ensemble.BaggingRegressor(n_estimators=200)
+def create_rf():
+    return ensemble.RandomForestRegressor(n_estimators=500,max_features=1.0,min_samples_split=2)
 
 train=load_data('train.csv')
 data_preprocess(train)
@@ -34,18 +35,7 @@ gbr=create_xrf()
 gbr.fit(X_train[feature_cols],y)
 y_count=list(gbr.predict(test[feature_cols]))
 
-#X_train,y1,y2=split_data(train,feature_cols)
-#X_test=test[feature_cols]
-#test_ids=test['datetime']
-#cols1=get_features(X_train,y1,9)
-#cols2=get_features(X_train,y2,11)
-# 
-#gbr1=create_gbr_c()
-#gbr1.fit(X_train[cols1],y1)
-#y_c=list(gbr1.predict(X_test[cols1]))
-#gbr2=create_gbr_r()
-#gbr2.fit(X_train[cols2],y2)
-#y_r=list(gbr2.predict(X_test[cols2]))
+
 
 with open('submit_extratrees_rf.csv', "wb") as outfile:
      outfile.write("datetime,count\n")

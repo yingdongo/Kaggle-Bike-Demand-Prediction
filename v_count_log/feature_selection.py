@@ -14,6 +14,7 @@ from sklearn.feature_selection import RFECV
 from sklearn.svm import SVR
 from tools import cross_val
 import pandas as pd
+
 def split_data(data,cols):
     X=data[cols]
     y=data['count']
@@ -53,10 +54,15 @@ def select_feature(X_train,y_train,feature_cols,day,importances):
     for i in f_range:
         cols=feature_cols[indices]
         cols=cols[:i]
-        score[i-f_start]=cross_val(create_rf(),X_train[cols],y_train,day)
+        score[i-f_start]=cross_val(create_rf(),X_train[cols],y_train,day).mean()
     return pd.DataFrame(score,index=f_range)
-def select_feature1select_feature(X_train,y,day):
     
+def select_feature1(X_train,y):
+    estimator = SVR(kernel="linear")
+    selector = RFECV(estimator, step=1, cv=5)
+    selector = selector.fit(X_train, np.log(np.around(y)+1))
+    return selector
+
 def select_by_rf():
     train=load_data('train.csv')
     data_preprocess(train)
@@ -78,22 +84,37 @@ def select_rfecv():
     train=load_data('train.csv')
     data_preprocess(train)
     feature_engineering(train)
-    feature_cols= [col for col in train.columns if col  not in ['datetime','count','casual','registered']]
+    feature_cols= [col for col in train.columns if col  not in ['day','datetime','count','casual','registered']]
     X_train,y=split_data(train,feature_cols)
-    selector=select_feature(X_train,y)
+    selector=select_feature1(X_train,y)
     print selector.support_ 
     print selector.ranking_
     print selector.grid_scores_
     print feature_cols
 def main():
-    select_by_rf()    
-#['hour','year','temp','workingday','month','weekday','humidity','atemp','weather','windspeed','temp_diff','holiday']
-#[ 0.61234506  0.08924774  0.08735438  0.04631075  0.04400216  0.03658491
-#  0.0286018   0.01861201  0.01453776  0.00811523  0.00761085  0.00495388
-#  0.00172348]
-#    select_rfecv()
-#[1 1 1 1 1 1 1 2 1 1 1 1 1]
+#    select_by_rf()    
+#['hour','year','temp','month','atemp','weekday','workingday','humidity','weather','temp_diff','windspeed','season','holiday']
+#[ 0.60389575  0.08927242  0.05562972  0.05154929  0.04569275  0.04549952
+#  0.04356758  0.02655373  0.01409159  0.00796151  0.00764408  0.00635438
+#  0.00228768]
+    select_rfecv()
+#[ True  True  True  True False  True  True False  True  True  True  True
+#  True]
+#[1 1 1 1 3 1 1 2 1 1 1 1 1]
+#[-0.21041232 -0.18947061  0.09888364  0.21499619  0.23261714  0.24069502
+#  0.3186224   0.37348924  0.37418203  0.37386578  0.40171352  0.40043108
+#  0.3613429 ]
 #['season', 'holiday', 'workingday', 'weather', 'temp', 'atemp', 'humidity', 'windspeed', 'year', 'weekday', 'month', 'hour', 'temp_diff']
 if __name__ == '__main__':
     main()
 
+#3   0.662042
+#4   0.706530
+#5   0.695409
+#6   0.401144
+#7   0.385807
+#8   0.354975
+#9   0.338548
+#10  0.340047
+#11  0.337670
+#12  0.338446

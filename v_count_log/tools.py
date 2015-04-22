@@ -24,9 +24,9 @@ def cross_val(reg, X,Y,day):
         test = np.logical_or(day == d, day== (d+1))
         train = np.logical_not(test)
         (tr_x, tt_x, tr_y, tt_y) = (X[train], X[test], Y[train], Y[test])
-        reg.fit(tr_x, tr_y)
+        reg.fit(tr_x, np.log(np.around(tr_y)+1))
         y = reg.predict(tt_x)       
-        score = mean_squared_error(np.log(y + 1), np.log(np.around(tt_y + 1))) ** 0.5
+        score = mean_squared_error(y, np.log(np.around(tt_y)+1)) ** 0.5
         #print 'score = ', score
         scores.append(score)
     return np.array(scores)

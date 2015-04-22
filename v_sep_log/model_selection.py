@@ -7,19 +7,33 @@ Created on Tue Mar 17 22:57:02 2015
 from sklearn import ensemble
 from tools import load_data
 from feature_engineering import feature_engineering
-from data_preprocess import data_preprocess
+from data_preprocess import data_preprocess 
 from tools import cross_val
 from feature_selection import split_data
 import pandas as pd
 from sklearn.linear_model import ElasticNet
 from sklearn.linear_model import Lasso
 from sklearn.svm import SVR
-from matplotlib import pyplot as plt
 from sklearn.linear_model import LinearRegression
+import numpy as np
 
-def get_features():
-    return ['season', 'holiday', 'workingday', 'weather', 'temp', 'atemp', 'humidity', 'temp_diff', 'month', 'hour']
-    
+class Reg:
+    def __init__(self, r0, r1):
+        self.r0 = r0
+        self.r1 = r1
+    def fit(self, xs, ys):
+        self.r0.fit(xs, np.log(ys['registered'] + 1))
+        self.r1.fit(xs, np.log(ys['casual'] + 1))
+    def predict(self, xs):
+        ys0 = np.exp(self.r0.predict(xs)) - 1
+        ys1 = np.exp(self.r1.predict(xs)) - 1
+        ys = np.around(ys0 + ys1)
+        ys[ys < 0] = 0
+        return ys
+
+
+
+
 def create_rg():
     models=[]
     models.append
@@ -39,36 +53,26 @@ def clf_score(models,X_train,y_train,day):
     index=[]
     score=[]
     for clf in models:
-        index.append(clf[0])
-        score.append(cross_val(clf[1],X_train,y_train,day).mean())
+        for clf1 in models:
+            index.append(clf[0]+clf1[0])
+            cv=cross_val(Reg(clf[1],clf1[1]),X_train,y_train,day).mean()
+            print clf[0]+" "+clf1[0]
+            print cv
+            score.append(cv)
     return pd.DataFrame(score,index=index)
 
 def main():
     train=load_data('train.csv')
-    data_preprocess(train)
-    feature_engineering(train)
+    train=data_preprocess(train)
+    train=feature_engineering(train)
     day=train['day']
-    feature_cols= [col for col in train.columns if col  not in ['datetime','count','casual','registered']]
+    feature_cols= [col for col in train.columns if col  not in ['day','datetime','count','casual','registered']]
     X_train,y=split_data(train,feature_cols)
+    #cols=get_features(X_train,y,10)
     rg_scores=clf_score(create_rg(),X_train[feature_cols],y,day)
     print rg_scores
-    plt.plot(rg_scores)
-    plt.title('sum')
-    plt.xticks(range(len(rg_scores)), rg_scores.index, fontsize=14, rotation=90)
-    plt.show()
+
 
 
 if __name__ == '__main__':
     main()
-    
-    
-#linearRg      1.137726
-#ElasticNet    1.048372
-#Lasso         1.065869
-#linearSVR     1.119695
-#rbfSVR        1.146124
-#AdaBooost     0.665884
-#Bagging       0.338900
-#ExtraTrees    0.341044
-#GB            0.380523
-#RandomForest  0.340616

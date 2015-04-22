@@ -12,21 +12,6 @@ def load_data(url):
     data = pd.read_csv(url)
     return data
 
-def cross_val1(reg, X,Y,day):
-    print 'cross validation...'
-    scores = []
-    # chose the continuous date as test set as (10,11), (11,12), ... (18, 19)
-    # close to the real station
-    for d in range(10, 19):
-        test = np.logical_or(day == d, day== (d+1))
-        train = np.logical_not(test)
-        (tr_x, tt_x, tr_y, tt_y) = (X[train], X[test], Y[train], Y[test])
-        reg.fit(tr_x, tr_y)
-        y = reg.predict(tt_x)       
-        score = mean_squared_error(y, np.log(np.around(tt_y+ 1))) ** 0.5
-        #print 'score = ', score
-        scores.append(score)
-    return np.array(scores)
 
 def cross_val(reg, X,Y,day):
     #print 'cross validation...'

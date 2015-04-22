@@ -5,11 +5,12 @@ Created on Tue Mar 17 22:18:28 2015
 @author: Ying
 """
 from sklearn import ensemble
-from sklearn import cross_validation
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from explore_data import load_data
+from tools import load_data
+from tools import Reg
+from tools import cross_val
 from feature_engineering import feature_engineering
 from data_preprocess import data_preprocess 
 def split_data(data,cols):
@@ -17,26 +18,17 @@ def split_data(data,cols):
     y=data[['casual','registered']]
     return X,y
 
-def split_data1(data,cols):
-    X=data[cols]
-    y=data['count']
-    return X,y
-
 def create_rf():
-    rf=ensemble.RandomForestRegressor(n_estimators=1000, min_samples_split=6, oob_score=True)
-    return rf
+    forest=ensemble.RandomForestRegressor()  
+    forest1=ensemble.RandomForestRegressor()
+    return Reg(forest,forest1)
 
 def feature_importances(rg,X_train,y_train):
     rg.fit(X_train,y_train)
     return rg.feature_importances_
   
-def cv_score(rg,X_train,y_train):
-    score=cross_validation.cross_val_score(rg, X_train, y_train, scoring=None, 
-                                           cv=10, n_jobs=1, verbose=0, fit_params=None, score_func=None, 
-                                           pre_dispatch='2*n_jobs')
-    return score.mean()
 
-def select_feature(X_train,y_train,feature_cols,importances):
+def select_feature(X_train,y_train,feature_cols,day,importances):
     indices = np.argsort(importances)[::-1]    
     f_count=len(importances)
     f_start=np.int(np.sqrt(f_count))
@@ -45,7 +37,7 @@ def select_feature(X_train,y_train,feature_cols,importances):
     for i in f_range:
         cols=feature_cols[indices]
         cols=cols[:i]
-        score[i-f_start]=cv_score(create_rf(),X_train[cols],y_train)
+        score[i-f_start]=cross_val(create_rf(),X_train[cols],y_train,day)
     return pd.DataFrame(score,index=f_range)
 
 
@@ -73,33 +65,13 @@ def main():
     train=load_data('train.csv')
     train=data_preprocess(train)
     train=feature_engineering(train)
+    day=train['day']
     feature_cols= [col for col in train.columns if col  not in ['datetime','count','casual','registered']]
-
-    X_train,y=split_data1(train,feature_cols)
+    X_train,y=split_data(train,feature_cols)
     importances=feature_importances(create_rf(),X_train,y)
-    score=select_feature(X_train,y,X_train.columns,importances)
+    score=select_feature(X_train,y,X_train.columns,day,importances)
     print score
-#==============================================================================
-#     X_train,y_train1,y_train2=split_data(train,feature_cols)
-#     importances1=feature_importances(create_rf(),X_train,y_train1)
-#     plot_importances(importances1,X_train.columns)
-#     score1=select_feature(X_train,y_train1,X_train.columns,importances1)
-#     print score1
-#     plt.figure(figsize=(20,8))
-#     plt.plot(score1)
-#     plt.title('features for casual')
-#     plt.xticks(range(len(score1)),score1.index)
-#     plt.show()
-# 
-#     importances2=feature_importances(create_rf(),X_train,y_train2)
-#     plot_importances(importances1,X_train.columns)
-#     score2=select_feature(X_train,y_train2,X_train.columns,importances2)
-#     print score2
-#     plt.figure(figsize=(20,8))
-#     plt.plot(score2)
-#     plt.title('features for registered')
-#     plt.xticks(range(len(score2)),score2.index)
-#==============================================================================
+
     plt.show()
 
 if __name__ == '__main__':
