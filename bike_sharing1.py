@@ -148,24 +148,23 @@ def prepare_submission(model, xtrain, ytrain, xtest, ytest):
 
     return
 
-if __name__ == '__main__':
-    xtrain, ytrain, xtest, ytest = load_data()
+xtrain, ytrain, xtest, ytest = load_data()
 
-    print xtrain.shape, ytrain.shape, xtest.shape, ytest.shape
+print xtrain.shape, ytrain.shape, xtest.shape, ytest.shape
 
-    pca = KernelPCA(kernel='rbf')
-    x_pca = np.vstack([xtrain, xtest])
-    print x_pca.shape
-    pca.fit(xtrain)
+pca = KernelPCA(kernel='rbf')
+x_pca = np.vstack([xtrain, xtest])
+print x_pca.shape
+pca.fit(xtrain)
 
-    xtrain = pca.transform(xtrain)
-    xtest = pca.transform(xtest)
+xtrain = pca.transform(xtrain)
+xtest = pca.transform(xtest)
 
-    #compare_models(xtrain, ytrain)
-    model = RandomForestRegressor(n_estimators=400, n_jobs=-1)
-    model = GradientBoostingRegressor(loss='ls', verbose=1, max_depth=7, n_estimators=200)
+#compare_models(xtrain, ytrain)
+#model = RandomForestRegressor(n_estimators=400, n_jobs=-1)
+#model = GradientBoostingRegressor(loss='ls', verbose=1, max_depth=7, n_estimators=200)
 
-    #print 'score', score_model(model, xtrain, ytrain)
-    #print model.feature_importances_
+#print 'score', score_model(model, xtrain, ytrain)
+#print model.feature_importances_
 
-    prepare_submission(model, xtrain, ytrain, xtest, ytest)
+#prepare_submission(model, xtrain, ytrain, xtest, ytest)

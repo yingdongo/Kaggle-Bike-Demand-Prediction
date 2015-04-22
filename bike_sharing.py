@@ -89,6 +89,7 @@ def cross_val(reg, tr):
         score = mean_squared_error(np.log(y + 1), np.log(np.around(tt_y[:,0] + tt_y[:,1] + 1))) ** 0.5
         print 'score = ', score
         scores.append(score)
+    print np.array(scores).mean()
     return np.array(scores)
 
 class Reg:
@@ -102,7 +103,8 @@ class Reg:
     def predict(self, xs):
         ys0 = np.exp(self.r0.predict(xs[:,self.select])) - 1
         ys1 = np.exp(self.r1.predict(xs[:,self.select])) - 1
-        ys = np.around(ys0 + ys1)
+        #ys = np.around(ys0 + ys1)
+        ys = ys0 + ys1
         ys[ys < 0] = 0
         return ys
 
@@ -113,17 +115,6 @@ class Combiner:
     def fit(self, xs, ys):
         for r in self.regs:
             r.fit(xs, ys)
-    def _predict(self, xs):
-        ys0 = np.zeros(xs.shape[0])
-        ys1 = np.zeros(xs.shape[0])
-        for r in self.regs:
-            r0 = r.r0
-            r1 = r.r1
-            ys0 += np.exp(r0.predict(xs[:,r.select])) - 1
-            ys1 += np.exp(r1.predict(xs[:,r.select])) - 1
-        ys = np.intp(np.around((ys0 + ys1) * 1.0 / len(self.regs)))
-        ys[ys < 0] = 0
-        return ys
     def predict(self, xs):
         ys = np.zeros(xs.shape[0])
         for r in self.regs:
@@ -141,17 +132,19 @@ def select_rf(tr):
     tuning = 0
 
     if not tuning:
-        reg0 = RandomForestRegressor(n_estimators = n, random_state = 0, min_samples_split = 11, oob_score = False, n_jobs = -1)
-        reg1 = RandomForestRegressor(n_estimators = n, random_state = 0, min_samples_split = 11, oob_score = False, n_jobs = -1)
+        reg0 = RandomForestRegressor(n_estimators = 1100, random_state = 0, min_samples_split = 11, oob_score = False, n_jobs = -1)
+        reg1 = RandomForestRegressor(n_estimators = 1100, random_state = 0, min_samples_split = 11, oob_score = False, n_jobs = -1)
         reg = Reg(reg0, reg1)
         return reg
 
     min_samples_split = [9,10,11,12]
+    min_samples_split=11
+    n=[800,1000,1100]
     info = {}
-    for mss in min_samples_split:
-        print 'min_samples_split = ', mss
-        reg0 = RandomForestRegressor(n_estimators = n, random_state = 0, min_samples_split = mss, oob_score = False, n_jobs = -1)
-        reg1 = RandomForestRegressor(n_estimators = n, random_state = 0, min_samples_split = mss, oob_score = False, n_jobs = -1)
+    for mss in n:
+        print 'n = ', mss
+        reg0 = RandomForestRegressor(n_estimators = mss, random_state = 0, min_samples_split = 11, oob_score = False, n_jobs = -1)
+        reg1 = RandomForestRegressor(n_estimators = mss, random_state = 0, min_samples_split = 11, oob_score = False, n_jobs = -1)
         reg = Reg(reg0, reg1)
         scores = cross_val(reg, tr)
         info[mss] = scores
@@ -167,17 +160,18 @@ def select_gbdt(tr):
     tuning = 0
 
     if not tuning:
-        reg0 = GradientBoostingRegressor(n_estimators = n, max_depth = 6, random_state = 0)
         reg1 = GradientBoostingRegressor(n_estimators = n, max_depth = 6, random_state = 0)
+        reg0 = GradientBoostingRegressor(n_estimators = n, max_depth = 6, random_state = 0)
         reg = Reg(reg0, reg1)
         return reg
-
+        
     max_depth = [5,6,7]
+    n=[100,110,120]#110
     info = {}
-    for md in max_depth:
-        print 'max_depth = ', md
-        reg0 = GradientBoostingRegressor(n_estimators = n, max_depth = md, random_state = 0)
-        reg1 = GradientBoostingRegressor(n_estimators = n, max_depth = md, random_state = 0)
+    for md in n:
+        print 'n = ', md
+        reg0 = GradientBoostingRegressor(n_estimators = md, max_depth = 6, random_state = 0)
+        reg1 = GradientBoostingRegressor(n_estimators = md, max_depth = 6, random_state = 0)
         reg = Reg(reg0, reg1)
         scores = cross_val(reg, tr)
         info[md] = scores
@@ -191,13 +185,12 @@ def select():
     print('training ...')
     reg_rf = select_rf(tr)
     reg = reg_rf
-    reg_gbdt = select_gbdt(tr)
-    reg = reg_gbdt
+    #reg_gbdt = select_gbdt(tr)
+    #reg = reg_gbdt
     #reg = Combiner([reg_rf, reg_gbdt])
     cv = 1
     if cv:
         scores = cross_val(reg, tr)
-        print scores
         print scores.mean(), scores.std()
     return (reg, tr)
 
@@ -210,7 +203,7 @@ def run(reg, tr):
     (xs, dts) = read_test()
     print('testing ...')
     ys = reg.predict(xs)
-    f = open('submission0.csv','w')
+    f = open('submission_gbdt.csv','w')
     f.write('datetime,count\n')
     n = len(dts)
     for i in xrange(0, n):

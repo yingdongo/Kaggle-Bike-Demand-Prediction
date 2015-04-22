@@ -5,10 +5,11 @@ Created on Tue Mar 17 22:57:02 2015
 @author: Ying
 """
 from sklearn import ensemble
-from explore_data import load_data
-from feature_engineering import add_feature
+from tools import load_data
+from feature_engineering import feature_engineering
+from data_preprocess import data_preprocess
 from feature_selection import cv_score
-from feature_selection import split_data1
+from feature_selection import split_data
 import pandas as pd
 from sklearn.linear_model import ElasticNet
 from sklearn.linear_model import Lasso
@@ -45,12 +46,11 @@ def clf_score(models,X_train,y_train):
 
 def main():
     train=load_data('train.csv')
-    
+    data_preprocess(train)
     feature_engineering(train)
     feature_cols= [col for col in train.columns if col  not in ['datetime','count','casual','registered']]
-    X_train,y=split_data1(train,feature_cols)
-    cols=feature_cols
-    rg_scores=clf_score(create_rg(),X_train[cols],y)
+    X_train,y=split_data(train,feature_cols)
+    rg_scores=clf_score(create_rg(),X_train[feature_cols],y)
     print rg_scores
     plt.plot(rg_scores)
     plt.title('sum')

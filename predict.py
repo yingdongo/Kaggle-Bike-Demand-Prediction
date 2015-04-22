@@ -8,49 +8,145 @@ from sklearn import ensemble
 from tools import load_data
 from feature_engineering import feature_engineering
 from data_preprocess import data_preprocess 
-from feature_selection import split_data1
-from feature_selection import split_data
 from feature_selection import get_features
+from tools import cross_val
+from tools import cross_val1
+from tools import Reg
+import numpy as np
 
-def create_gbr_c():
-    return ensemble.GradientBoostingRegressor(n_estimators=200,learning_rate=0.1,loss='huber',max_features=0.1)
-def create_gbr_r():
-    return ensemble.GradientBoostingRegressor(n_estimators=1000,learning_rate=0.01,loss='huber',max_features=1.0)
-def create_gbr():
-    return ensemble.GradientBoostingRegressor(n_estimators=1000,learning_rate=0.1,loss='ls',max_features=0.3)
-def create_rf():
-    return ensemble.RandomForestRegressor(n_estimators=1000, min_samples_split=6, oob_score=True)
+def create_rr():
+    reg0 = ensemble.RandomForestRegressor(n_estimators = 1100, random_state = 0, min_samples_split = 12, oob_score = False, n_jobs = -1)
+    reg1 = ensemble.RandomForestRegressor(n_estimators = 1100, random_state = 0, min_samples_split = 12, oob_score = False, n_jobs = -1)
+    return Reg(reg0,reg1)
+def create_gg():
+     reg1 = ensemble.GradientBoostingRegressor(n_estimators = 200, max_depth = 5, random_state = 0)
+     reg0 = ensemble.GradientBoostingRegressor(n_estimators = 200, max_depth = 5, random_state = 0)
+     return Reg(reg0,reg1)   
+def create_gr():
+     reg1=ensemble.RandomForestRegressor(n_estimators=1000, min_samples_split=10)
+     reg0=ensemble.GradientBoostingRegressor(n_estimators=200,max_depth=5)
+     return Reg(reg0,reg1)
+def create_rg():
+     reg0=ensemble.RandomForestRegressor(n_estimators=900, min_samples_split=11)
+     reg1=ensemble.GradientBoostingRegressor(n_estimators=200,max_depth=5)
+     return Reg(reg0,reg1)
+def get_basicrg():
+    reg=ensemble.RandomForestRegressor(n_estimators= 400)
+    return reg  
+def get_rg():
+    reg=ensemble.RandomForestRegressor(n_estimators= 400)
+    return reg  
+def get_gbtr():
+    reg = ensemble.GradientBoostingRegressor(n_estimators = 200, max_depth = 7, random_state = 0)
+    return reg
+def basicrg_predict(X_train,y,X_test):
+    y_pre=get_basicrg().fit(X_train,y).predict(X_test)
+    return y_pre
+def rg_predict(rg,X_train,y,X_test):
+    y_pre=rg.fit(X_train,y).predict(X_test)
+    return y_pre
+
+def simple_solution(reg,train,test):
+    cols= [col for col in train.columns if col  not in ['day','datetime','count','casual','registered']]
+    X_train=train[cols]
+    y=train[['registered','casual']]
+    X_test=test[cols]
+    test_ids=test['datetime']
+    score=cross_val(reg,X_train,y)
+    print 'preprocess_solution:'
+    print score
+    y_pred=rg_predict(reg,X_train,y,X_test)
+    write_result(test_ids,y_pred,'preprocess_solution.csv')
+
+ 
+def preprocess_solution(reg,train,test):
+    cols= [col for col in train.columns if col  not in ['day','datetime','count','casual','registered']]
+    train=data_preprocess(train)
+    test=data_preprocess(test)
+    X_train=train[cols]
+    y=train[['registered','casual']]
+    X_test=test[cols]
+    test_ids=test['datetime']
+    score=cross_val(reg,X_train,y)
+    print 'preprocess_solution:'
+    print score
+    y_pred=rg_predict(reg,X_train,y,X_test)
+    write_result(test_ids,y_pred,'preprocess_solution.csv')
+
+def engineering_solution(reg,train,test):
+    cols= [col for col in train.columns if col  not in ['day','datetime','count','casual','registered']]
+    train=data_preprocess(train)
+    test=data_preprocess(test)
+    train=feature_engineering(train)
+    test=feature_engineering(test)
+    X_train=train[cols]
+    y=train[['registered','casual']]
+    X_test=test[cols]
+    test_ids=test['datetime']
+    
+    score=cross_val(reg,X_train,y)
+    print 'preprocess_solution:'
+    print score
+    y_pred=rg_predict(reg,X_train,y,X_test)
+    write_result(test_ids,y_pred,'engineering_solution.csv')
+    
+def selection_solution(reg,train,test):
+    cols= [col for col in train.columns if col  not in ['day','datetime','count','casual','registered']]
+    train=data_preprocess(train)
+    test=data_preprocess(test)
+    train=feature_engineering(train)
+    test=feature_engineering(test)
+    X_train=train[cols]
+    y=train[['registered','casual']]
+    X_test=test[cols]
+    test_ids=test['datetime']
+    score=cross_val(reg,X_train,y)
+    print 'preprocess_solution:'
+    print score
+    y_pred=rg_predict(reg,X_train,y,X_test)
+    write_result(test_ids,y_pred,'selection_solution.csv') 
+    
+def paramtuning_solution(reg,train,test):
+    cols= [col for col in train.columns if col  not in ['day','datetime','count','casual','registered']]
+    train=data_preprocess(train)
+    test=data_preprocess(test)
+    train=feature_engineering(train)
+    test=feature_engineering(test)
+    X_train=train[cols]
+    y=train[['registered','casual']]
+    X_test=test[cols]
+    test_ids=test['datetime']
+    score=cross_val(reg,X_train,y)
+    print 'preprocess_solution:'
+    print score
+    y_pred=rg_predict(reg,X_train,y,X_test)
+    write_result(test_ids,y_pred,'paramtuning_solution.csv')
+    
+
+def final_solution(reg,train,test):
+    test_ids=[]
+    y_pred=[]
+    write_result(test_ids,y_pred,'final_solution.csv')
+    
+def write_result(test_ids,y,filename):
+    with open(filename, "wb") as outfile:
+         outfile.write("datetime,count\n")
+         for e, val in enumerate(y):
+             outfile.write("%s,%s\n"%(test_ids[e],abs(val)))
+
 
 train=load_data('train.csv')
 test=load_data('test.csv')
 train=data_preprocess(train)
-train=feature_engineering(train)
 test=data_preprocess(test)
+train=feature_engineering(train)
 test=feature_engineering(test)
-feature_cols= [col for col in train.columns if col  not in ['datetime','count','casual','registered']]
-
-X_train,y=split_data1(train,feature_cols)
-X_test=test[feature_cols]
+cols= [col for col in train.columns if col  not in ['day','datetime','count','casual','registered']]
+X_train=train[cols]
+y=train['count']
+X_test=test[cols]
 test_ids=test['datetime']
-cols=get_features(X_train,y,10)
-gbr=create_rf()
-gbr.fit(X_train[cols],y)
-y_count=list(gbr.predict(X_test[cols]))
-
-#X_train,y1,y2=split_data(train,feature_cols)
-#X_test=test[feature_cols]
-#test_ids=test['datetime']
-#cols1=get_features(X_train,y1,9)
-#cols2=get_features(X_train,y2,11)
-# 
-#gbr1=create_gbr_c()
-#gbr1.fit(X_train[cols1],y1)
-#y_c=list(gbr1.predict(X_test[cols1]))
-#gbr2=create_gbr_r()
-#gbr2.fit(X_train[cols2],y2)
-#y_r=list(gbr2.predict(X_test[cols2]))
-
-with open('submit2.csv', "wb") as outfile:
-     outfile.write("datetime,count\n")
-     for e, val in enumerate(y_count):
-         outfile.write("%s,%s\n"%(test_ids[e],abs(val)))
+reg=get_gbtr()
+day=train['day']
+y_pred=rg_predict(reg,X_train,y,X_test)
+write_result(test_ids,y_pred,'gbrt_count.csv')

@@ -21,18 +21,15 @@ def get_rgs():
             'gbr' : { 
                 'est' :[ensemble.GradientBoostingRegressor(),ensemble.GradientBoostingRegressor()],
                 'grid' : {
-                'loss' :['ls', 'huber','lad','quantile'],
                 'n_estimators' : [100,500,1000],
                 'learning_rate': [.1,.03,.01],
-                'max_features': [1.0, .3, .1],
-                'max_depth': [2,6,10]
+                'max_depth': [3,6,10]
                 }
             },
             'extra trees' : { 
                 'est' :[ensemble.ExtraTreesRegressor(),ensemble.ExtraTreesRegressor],
                 'grid' : {
                 'n_estimators' : [100,500,1000],
-                'max_features': [1.0, .3, .1],
                 'min_samples_split':[2,6,10]
                 }
             },
@@ -40,7 +37,6 @@ def get_rgs():
                 'est' :[ensemble.RandomForestRegressor(),ensemble.RandomForestRegressor()],
                 'grid' : {
                 'n_estimators' : [100,500,1000],
-                'max_features': [1.0, .3, .1],
                 'min_samples_split':[2,6,10],
                 'oob_score':[True,False]
                 }
@@ -63,10 +59,8 @@ class Reg:
 from sklearn.metrics import mean_squared_error
 
 def cross_val(reg, X,Y,day):
-    print 'cross validation...'
+    #print 'cross validation...'
     scores = []
-    # kf = KFold(X.shape[0], 10)
-    # for train, test in kf:
     # chose the continuous date as test set as (10,11), (11,12), ... (18, 19)
     # close to the real station
     for d in range(10, 19):
@@ -76,7 +70,7 @@ def cross_val(reg, X,Y,day):
         reg.fit(tr_x, tr_y)
         y = reg.predict(tt_x)       
         score = mean_squared_error(np.log(y + 1), np.log(np.around(tt_y['registered'] + tt_y['casual'] + 1))) ** 0.5
-        print 'score = ', score
+        #print 'score = ', score
         scores.append(score)
     return np.array(scores)
 
@@ -94,14 +88,12 @@ def grid_search(X_train,y,day,clfs):
             for i in range(0,len(param_list)):
                for j in range(0,len(param_list1)):
                    reg0=clfs[name]['est'][0].set_params(**param_list[i])
-                   reg1=clfs[name1]['est'][1].set_params(**param_list[j])
+                   reg1=clfs[name1]['est'][1].set_params(**param_list1[j])
                    reg=Reg(reg0,reg1)
-                   print param_list[i]
-                   print param_list[j]
-                   print name
-                   print name1
+
                    cv=cross_val(reg,X_train,y,day)
                    scores.append([cv.mean(),name,name1,param_list[i],param_list1[j]])
+                   print [cv.mean(),name,name1,param_list[i],param_list1[j]]
     return scores
     
 def main():

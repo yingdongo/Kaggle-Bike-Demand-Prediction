@@ -14,9 +14,8 @@ from feature_engineering import feature_engineering
 from data_preprocess import data_preprocess 
 def split_data(data,cols):
     X=data[cols]
-    y1=data['casual']
-    y2=data['registered']
-    return X,y1,y2
+    y=data[['casual','registered']]
+    return X,y
 
 def split_data1(data,cols):
     X=data[cols]
