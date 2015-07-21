@@ -8,7 +8,7 @@ from sklearn import ensemble
 from tools import load_data
 from feature_engineering import feature_engineering
 from data_preprocess import data_preprocess
-from feature_selection import cv_score
+from tools import cv_score
 from feature_selection import split_data
 import pandas as pd
 from sklearn.linear_model import ElasticNet
@@ -29,7 +29,6 @@ def create_rg():
     models.append(('linearSVR',SVR(kernel='linear')))
     models.append(('rbfSVR',SVR(kernel='rbf')))
     models.append(('AdaBooost',ensemble.AdaBoostRegressor()))
-    models.append(('AdaBooost',ensemble.AdaBoostRegressor()))
     models.append(('Bagging',ensemble.BaggingRegressor()))
     models.append(('ExtraTrees',ensemble.ExtraTreesRegressor()))
     models.append(('GB',ensemble.GradientBoostingRegressor()))
@@ -41,7 +40,8 @@ def clf_score(models,X_train,y_train):
     score=[]
     for clf in models:
         index.append(clf[0])
-        score.append(cv_score(clf[1],X_train,y_train))
+        print clf[0]
+        score.append(cv_score(clf[1],X_train.values,y_train.values))
     return pd.DataFrame(score,index=index)
 
 def main():
@@ -51,7 +51,6 @@ def main():
     feature_cols= [col for col in train.columns if col  not in ['datetime','count','casual','registered']]
     X_train,y=split_data(train,feature_cols)
     rg_scores=clf_score(create_rg(),X_train[feature_cols],y)
-    print rg_scores
     plt.plot(rg_scores)
     plt.title('sum')
     plt.xticks(range(len(rg_scores)), rg_scores.index, fontsize=14, rotation=90)

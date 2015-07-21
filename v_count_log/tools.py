@@ -12,6 +12,17 @@ def load_data(url):
     data = pd.read_csv(url)
     return data
 
+def calculate_rmsle(ypred, yactual):
+    N = len(yactual)
+    lsum = 0.0
+    for i in range(N):
+        x, y = ypred[i]+1.0, yactual[i]+1.0
+        if x < 1:
+            x = 1
+        lsum += (np.log(x)-np.log(y))**2
+    lsum /= N
+
+    return np.sqrt(lsum)
 
 def cross_val(reg, X,Y,day):
     #print 'cross validation...'
@@ -26,7 +37,7 @@ def cross_val(reg, X,Y,day):
         (tr_x, tt_x, tr_y, tt_y) = (X[train], X[test], Y[train], Y[test])
         reg.fit(tr_x, np.log(np.around(tr_y)+1))
         y = reg.predict(tt_x)       
-        score = mean_squared_error(y, np.log(np.around(tt_y)+1)) ** 0.5
+        score = mean_squared_error(y, np.log(tt_y+1)) ** 0.5
         #print 'score = ', score
         scores.append(score)
     return np.array(scores)

@@ -11,10 +11,7 @@ from data_preprocess import data_preprocess
 from tools import cross_val
 from feature_selection import split_data
 import pandas as pd
-from sklearn.linear_model import ElasticNet
-from sklearn.linear_model import Lasso
-from sklearn.svm import SVR
-from sklearn.linear_model import LinearRegression
+
 import numpy as np
 
 class Reg:
@@ -36,24 +33,24 @@ class Reg:
 
 def create_rg():
     models=[]
-    models.append
-    models.append(('linearRg',LinearRegression()))
-    models.append(('ElasticNet',ElasticNet(),))
-    models.append(('Lasso',Lasso()))
-    models.append(('linearSVR',SVR(kernel='linear')))
-    models.append(('rbfSVR',SVR(kernel='rbf')))
-    models.append(('AdaBooost',ensemble.AdaBoostRegressor()))
     models.append(('Bagging',ensemble.BaggingRegressor()))
     models.append(('ExtraTrees',ensemble.ExtraTreesRegressor()))
     models.append(('GB',ensemble.GradientBoostingRegressor()))
     models.append(('RandomForest',ensemble.RandomForestRegressor()))
     return models
-
-def clf_score(models,X_train,y_train,day):
+    
+def create_rg1():
+    models=[]
+    models.append(('Bagging',ensemble.BaggingRegressor()))
+    models.append(('ExtraTrees',ensemble.ExtraTreesRegressor()))
+    models.append(('GB',ensemble.GradientBoostingRegressor()))
+    models.append(('RandomForest',ensemble.RandomForestRegressor()))
+    return models
+def clf_score(models,models1,X_train,y_train,day):
     index=[]
     score=[]
     for clf in models:
-        for clf1 in models:
+        for clf1 in models1:
             index.append(clf[0]+clf1[0])
             cv=cross_val(Reg(clf[1],clf1[1]),X_train,y_train,day).mean()
             print clf[0]+" "+clf1[0]
@@ -69,10 +66,27 @@ def main():
     feature_cols= [col for col in train.columns if col  not in ['day','datetime','count','casual','registered']]
     X_train,y=split_data(train,feature_cols)
     #cols=get_features(X_train,y,10)
-    rg_scores=clf_score(create_rg(),X_train[feature_cols],y,day)
+    rg_scores=clf_score(create_rg(),create_rg1(),X_train[feature_cols],y,day)
     print rg_scores
 
 
 
 if __name__ == '__main__':
     main()
+
+#BaggingBagging            0.328482
+#BaggingExtraTrees         0.331503
+#BaggingGB                 0.325462
+#BaggingRandomForest       0.328731
+#ExtraTreesBagging         0.329073
+#ExtraTreesExtraTrees      0.335750
+#ExtraTreesGB              0.329123
+#ExtraTreesRandomForest    0.336549
+#GBBagging                 0.352721
+#GBExtraTrees              0.355041
+#GBGB                      0.361221
+#GBRandomForest            0.353482
+#RandomForestBagging       0.327145
+#RandomForestExtraTrees    0.330594
+#RandomForestGB            0.325422
+#RandomForestRandomForest  0.324407

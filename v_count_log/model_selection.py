@@ -40,7 +40,10 @@ def clf_score(models,X_train,y_train,day):
     score=[]
     for clf in models:
         index.append(clf[0])
-        score.append(cross_val(clf[1],X_train,y_train,day).mean())
+        print clf[0]
+        cv_score=cross_val(clf[1],X_train,y_train,day).mean()
+        print cv_score
+        score.append(cv_score)
     return pd.DataFrame(score,index=index)
 
 def main():
@@ -48,7 +51,7 @@ def main():
     data_preprocess(train)
     feature_engineering(train)
     day=train['day']
-    feature_cols= [col for col in train.columns if col  not in ['datetime','count','casual','registered']]
+    feature_cols= [col for col in train.columns if col  not in ['day','datetime','count','casual','registered']]
     X_train,y=split_data(train,feature_cols)
     rg_scores=clf_score(create_rg(),X_train[feature_cols],y,day)
     print rg_scores
