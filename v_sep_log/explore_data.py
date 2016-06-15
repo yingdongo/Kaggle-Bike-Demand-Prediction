@@ -39,6 +39,7 @@ def plot_correlations(data):
     ax.set_yticks(np.arange(len(cols)))
     ax.set_xticklabels(cols)
     ax.set_yticklabels(cols)
+
 def main(): 
     train=load_data('train.csv')
     show_data(train)

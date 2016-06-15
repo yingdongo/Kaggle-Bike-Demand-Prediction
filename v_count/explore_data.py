@@ -112,6 +112,8 @@ def plot_hour_mean():
     plt.plot(hour_casual)
     plt.legend(['count', 'registered', 'casual'], loc='upper left')
     plt.xlabel('[hour]')
+    plt.ylabel('Number of users')
+
     plt.title('mean value of count/registered/casual per hour')
     ax.set_xticks(np.arange(len(cols)))
     ax.set_xticklabels(cols)
@@ -134,6 +136,8 @@ def plot_day_mean():
     plt.plot(hour_casual,linewidth=2)
     plt.legend(['count', 'registered', 'casual'],bbox_to_anchor=(1.05, 1),loc=2, borderaxespad=0.)
     plt.xlabel('[dayofweek]')
+    plt.ylabel('Number of users')
+
     plt.title('mean value of count/registered/casual per dayofweek')
     ax.set_xticklabels(['Mon','Tue','Wed','Thu','Fr','Sat','Sun'])
     ax.set_xticks(np.arange(len(cols)))
@@ -142,3 +146,4 @@ def plot_day_mean():
     
 
 plot_day_mean()
+plot_hour_mean()

@@ -46,6 +46,7 @@ def create_rg1():
     models.append(('GB',ensemble.GradientBoostingRegressor()))
     models.append(('RandomForest',ensemble.RandomForestRegressor()))
     return models
+
 def clf_score(models,models1,X_train,y_train,day):
     index=[]
     score=[]
